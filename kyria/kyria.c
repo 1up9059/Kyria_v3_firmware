@@ -18,6 +18,8 @@
 #include "oled_driver.h"
 #include <string.h> 
 
+extern bool is_linux_mode(void);
+
 #ifdef OLED_ENABLE
 
 
@@ -64,11 +66,15 @@ bool oled_task_kb(void) {
         }
 
         // Host Keyboard LED Status
-         oled_write_P(PSTR("Funct: "), false);
+        oled_write_P(PSTR("Funct: "), false);
         led_t led_usb_state = host_keyboard_led_state();
+        oled_write_P(is_linux_mode() ? PSTR("Lnx\n") : PSTR("Wndws\n"),false);
         oled_write_P(led_usb_state.num_lock ? PSTR("NUMLCK ") : PSTR("       "), false);
         oled_write_P(led_usb_state.caps_lock ? PSTR("CAPLCK ") : PSTR("       "), false);
         oled_write_P(led_usb_state.scroll_lock ? PSTR("SCRLCK ") : PSTR("       "), false);
+        //oled_write_P(PSTR("OS: "), false);
+        //oled_write_P(is_linux_mode() ? PSTR("Lnx\n") : PSTR("Wndws\n"),false);
+        
     } else {
         // OLED del esclavo
         oled_set_cursor(0,0);
