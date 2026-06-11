@@ -50,8 +50,42 @@ enum layers {
 #define WIN_LOCK  LGUI(KC_L) 
 #define CAD CTL_ALT_DEL
 
+#define LNX_IEXL KC_EQL
+#define LNX_IQUE S(KC_EQL)
+
+
+#define LNX_MORD KC_GRV
+#define LNX_ACUT KC_QUOT
+#define LNX_TILD ALGR(KC_4)
+
+#define LNX_HASH ALGR(KC_3)
+#define LNX_CIRC S(KC_6)
+#define LNX_LBRC ALGR(KC_LBRC)
+#define LNX_RBRC ALGR(KC_RBRC)
+#define LNX_PIPE ALGR(KC_1)
+#define LNX_RCBR ALGR(KC_NUHS)
+#define LNX_LCBR ALGR(KC_QUOT)
+#define LNX_GRV KC_RBRC
+//#define LNX_GRV  ES_GRV
+
+
 enum custom_keycodes{
     CTL_ALT_DEL = SAFE_RANGE,
+    OS_WIN,
+    OS_LNX,
+    OS_TOG,
+
+    OS_HASH,
+    OS_CIRC,
+    OS_LBRC,
+    OS_RBRC,
+    OS_PIPE,
+    OS_RCBR,
+    OS_LCBR,
+    OS_GRV,
+    OS_TILD,
+    OS_MORD,
+    OS_ACUT,
 };
 
 /* -----------------------------------------------------------------
@@ -71,6 +105,52 @@ enum {
 
 };
 
+#define USER_CONFIG_LINUX_MODE 1
+
+static bool linux_mode = false;
+
+bool is_linux_mode(void) {
+    return linux_mode;
+}
+
+void keyboard_post_init_user(void) {
+    linux_mode = eeconfig_read_user() & USER_CONFIG_LINUX_MODE;
+}
+
+static void set_linux_mode(bool enabled) {
+    uint32_t user_config = eeconfig_read_user();
+
+    linux_mode = enabled;
+
+    if (enabled) {
+        user_config |= USER_CONFIG_LINUX_MODE;
+    } else {
+        user_config &= ~USER_CONFIG_LINUX_MODE;
+    }
+
+    eeconfig_update_user(user_config);
+}
+
+static uint16_t os_pick(uint16_t win_keycode, uint16_t linux_keycode) {
+    return linux_mode ? linux_keycode : win_keycode;
+}
+
+void td_excl_finished(tap_dance_state_t *state, void *user_data) {
+    if (state->count == 1) {
+        tap_code16(ES_EXLM);
+    } else {
+        tap_code16(linux_mode ? LNX_IEXL : ES_IEXL);
+    }
+}
+
+void td_ques_finished(tap_dance_state_t *state, void *user_data) {
+    if (state->count == 1) {
+        tap_code16(ES_QUES);
+    } else {
+        tap_code16(linux_mode ? LNX_IQUE : ES_IQUE);
+    }
+}
+
 tap_dance_action_t tap_dance_actions[] = {
     [TD_QUOT] = ACTION_TAP_DANCE_DOUBLE(ES_DQUO, ES_QUOT),
     [TD_SLSH] = ACTION_TAP_DANCE_DOUBLE(ES_SLSH, ES_BSLS), 
@@ -78,25 +158,91 @@ tap_dance_action_t tap_dance_actions[] = {
     [TD_DOT]  = ACTION_TAP_DANCE_DOUBLE(ES_DOT,  ES_COLN), 
     [TD_N]    = ACTION_TAP_DANCE_DOUBLE(ES_N, ES_NTIL),
     [TD_MIN]  = ACTION_TAP_DANCE_DOUBLE(ES_MINS, ES_UNDS),
-    [TD_QUES] = ACTION_TAP_DANCE_DOUBLE(ES_QUES, ES_IQUE),
-    [TD_EXCL] = ACTION_TAP_DANCE_DOUBLE(ES_EXLM, ES_IEXL),
+    [TD_QUES] = ACTION_TAP_DANCE_FN(td_ques_finished),
+    [TD_EXCL] = ACTION_TAP_DANCE_FN(td_excl_finished),
     [TD_EQPLUS] = ACTION_TAP_DANCE_DOUBLE(ES_PLUS, ES_EQL),
 };
 
 
+
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (!record->event.pressed) {
+        return true;
+    }
 
+    switch (keycode) {
+        case CTL_ALT_DEL:
+            register_code(KC_LCTL);
+            register_code(KC_LALT);
+            tap_code(KC_DEL);
+            unregister_code(KC_LALT);
+            unregister_code(KC_LCTL);
+            return false;
 
-    if (record->event.pressed) {
-        switch (keycode) {
-            case CTL_ALT_DEL:
-                register_code(KC_LCTL);
-                register_code(KC_LALT);
-                tap_code(KC_DEL);
-                unregister_code(KC_LALT);
-                unregister_code(KC_LCTL);
-                return false;
+        case OS_WIN:
+            set_linux_mode(false);
+            return false;
+
+        case OS_LNX:
+            set_linux_mode(true);
+            return false;
+
+        case OS_TOG:
+            set_linux_mode(!linux_mode);
+            return false;
+
+        case OS_HASH:
+            tap_code16(os_pick(KC_HASH, LNX_HASH));
+            return false;
+
+        case OS_CIRC:
+            tap_code16(os_pick(ES_CIRC, LNX_CIRC));
+            return false;
+
+        case OS_LBRC:
+            tap_code16(os_pick(ES_LBRC, LNX_LBRC));
+            return false;
+
+        case OS_RBRC:
+            tap_code16(os_pick(ES_RBRC, LNX_RBRC));
+            return false;
+
+        case OS_PIPE:
+            tap_code16(os_pick(ES_PIPE, LNX_PIPE));
+            return false;
+
+        case OS_RCBR:
+            tap_code16(os_pick(ES_RCBR, LNX_RCBR));
+            return false;
+
+        case OS_LCBR:
+            tap_code16(os_pick(ES_LCBR, LNX_LCBR));
+            return false;
+        
+        case OS_GRV:
+            if (linux_mode) {
+                SEND_STRING(SS_LCTL(SS_LSFT("u")) "60" SS_TAP(X_ENT));
+            } else {
+                tap_code16(ES_GRV);
             }
+            return false;
+
+        //case OS_GRV:
+        //    tap_code16(os_pick(ES_GRV, LNX_GRV));
+        //    return false;
+
+        case OS_TILD:
+            tap_code16(os_pick(ES_TILD, LNX_TILD));
+            return false;
+        
+        case OS_MORD:
+            tap_code16(os_pick(ES_MORD, LNX_MORD));
+            return false;
+
+        case OS_ACUT:
+            tap_code16(os_pick(ES_ACUT, LNX_ACUT));
+            return false;
     }
 
     return true;
@@ -130,7 +276,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //Modify
    [_QWERTY] = LAYOUT(
        CTL_ESC, ES_Q,  ES_W,    ES_E,      ES_R,      ES_T,                                                        ES_Y,      ES_U,        ES_I,       ES_O,       ES_P, TD(TD_QUOT),
-        KC_TAB, ES_A,  ES_S,    ES_D,      ES_F,      ES_G,                                                        ES_H,      ES_J,        ES_K,       ES_L,    ES_ACUT,     KC_BSPC,
+        KC_TAB, ES_A,  ES_S,    ES_D,      ES_F,      ES_G,                                                        ES_H,      ES_J,        ES_K,       ES_L,    OS_ACUT,     KC_BSPC,
      SHIF_CAPS, ES_Z,  ES_X,    ES_C,      ES_V,      ES_B, FKEYS,    NUM,        TD(TD_EQPLUS), TD(TD_QUES),  TD(TD_N),      ES_M, TD(TD_COSE), TD(TD_DOT), TD(TD_MIN), TD(TD_SLSH),
                              KC_MUTE, LALT_LGUI,   KC_LCTL,   SYM, KC_ENT,               KC_SPC,      ADJUST,       NAV, RALT_RGUI,    WIN_LOCK 
     ),
@@ -150,7 +296,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `----------------------------------'  `----------------------------------'
  */
 [_DVORAK] = LAYOUT(
-     CTL_ESC,  TD(TD_DOT), TD(TD_COSE),  ES_ACUT,      ES_P,      ES_Y,                                                         ES_F,      ES_G,     ES_C,     ES_H, ES_L, TD(TD_QUOT),
+     CTL_ESC,  TD(TD_DOT), TD(TD_COSE),  OS_ACUT,      ES_P,      ES_Y,                                                         ES_F,      ES_G,     ES_C,     ES_H, ES_L, TD(TD_QUOT),
       KC_TAB,        ES_A,        ES_O,     ES_E,      ES_U,      ES_I,                                                         ES_D,      ES_R,     ES_T, TD(TD_N), ES_S,     KC_BSPC,
    SHIF_CAPS,  TD(TD_MIN),        ES_Q,     ES_J,      ES_K,      ES_X, FKEYS,      KC_NUM,        TD(TD_EQPLUS), TD(TD_QUES),  ES_B,      ES_M,     ES_W,     ES_V, ES_Z, TD(TD_SLSH),
                                          KC_MUTE,   KC_LCTL, LALT_LGUI,   SYM,      KC_ENT,               KC_SPC,      ADJUST,   NAV, RALT_RGUI, WIN_LOCK
@@ -172,7 +318,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
     [_GAMES] = LAYOUT(
      CTL_ESC, ES_Q,  ES_W,    ES_E,     ES_R,    ES_T,                                                   ES_Y,      ES_U,        ES_I,       ES_O,       ES_P, TD(TD_QUOT),
-      KC_TAB, ES_A,  ES_S,    ES_D,     ES_F,    ES_G,                                                   ES_H,      ES_J,        ES_K,       ES_L,    ES_ACUT,     KC_BSPC,
+      KC_TAB, ES_A,  ES_S,    ES_D,     ES_F,    ES_G,                                                   ES_H,      ES_J,        ES_K,       ES_L,    OS_ACUT,     KC_BSPC,
      KC_LSFT, ES_Z,  ES_X,    ES_C,     ES_V,    ES_B,   ES_1,  ES_2,          ES_GRV, TD(TD_QUES),  TD(TD_N),      ES_M, TD(TD_COSE), TD(TD_DOT), TD(TD_MIN), TD(TD_SLSH),
                            KC_MUTE,  KC_LALT, KC_LCTL, KC_SPC,  ES_3,          KC_SPC,      ADJUST,       NAV, RALT_RGUI,  WIN_LOCK 
     ),
@@ -192,9 +338,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `----------------------------------'  `----------------------------------'
  */
     [_SYM] = LAYOUT(
-      ES_GRV,        ES_1,    ES_2,    ES_3,        ES_4,    ES_5,                                                    ES_6,    ES_7,    ES_8,    ES_9,    ES_0, TD(TD_QUOT),
-      KC_TAB, TD(TD_EXCL),   ES_AT, KC_HASH,      ES_DLR, ES_PERC,                                                 ES_CIRC, ES_AMPR, ES_ASTR, ES_LBRC, ES_RBRC,     KC_BSPC,
-     KC_LSFT,      ES_EQL, ES_MORD, ES_TILD, TD(TD_QUES), ES_PLUS, _______, _______,          _______, _______, TD(TD_MIN), ES_LABK, ES_RABK, ES_LCBR, ES_RCBR,     ES_PIPE,
+      OS_GRV,        ES_1,    ES_2,    ES_3,        ES_4,    ES_5,                                                    ES_6,    ES_7,    ES_8,    ES_9,    ES_0, TD(TD_QUOT),
+      KC_TAB, TD(TD_EXCL),   ES_AT, OS_HASH,      ES_DLR, ES_PERC,                                                 OS_CIRC, ES_AMPR, ES_ASTR, OS_LBRC, OS_RBRC,     KC_BSPC,
+     KC_LSFT,      ES_EQL, OS_MORD, OS_TILD, TD(TD_QUES), ES_PLUS, _______, _______,          _______, _______, TD(TD_MIN), ES_LABK, ES_RABK, OS_LCBR, OS_RCBR,     OS_PIPE,
                                         _______, _______, _______, _______, _______,          _______,  ADJUST,    _______, _______, _______
     ),
 
@@ -255,9 +401,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `----------------------------------'  `----------------------------------'
  */
     [_ADJUST] = LAYOUT(
-      _______, _______, _______, QWERTY, _______, _______,                                    _______, _______, _______, _______,  _______, _______,
-      _______, _______, _______, DVORAK, _______, _______,                                    RM_TOGG, RM_SATU, RM_HUEU, RM_VALU,  RM_NEXT, RM_SPDU,
-      _______, _______, _______,  GAMES, _______, _______,_______,          _______, _______, _______, RGB_MOD, RM_SATD, RM_HUED, RM_VALD,  RM_PREV, RM_SPDD,
+      _______,  QWERTY,  OS_WIN,_______, _______,  OS_TOG,                                    _______, _______, _______, _______,  _______, _______,
+      _______,  OS_LNX, _______, DVORAK, _______,   GAMES,                                    RM_TOGG, RM_SATU, RM_HUEU, RM_VALU,  RM_NEXT, RM_SPDU,
+      _______, _______, _______,_______, _______, _______,_______,          _______, _______, _______, RM_NEXT, RM_SATD, RM_HUED, RM_VALD,  RM_PREV, RM_SPDD,
                                 _______, _______, _______,_______,          _______, _______, _______, _______, _______, _______
     ),
 
