@@ -152,7 +152,7 @@ void td_ques_finished(tap_dance_state_t *state, void *user_data) {
 }
 
 tap_dance_action_t tap_dance_actions[] = {
-    [TD_QUOT] = ACTION_TAP_DANCE_DOUBLE(ES_DQUO, ES_QUOT),
+    [TD_QUOT] = ACTION_TAP_DANCE_DOUBLE(ES_QUOT, ES_DQUO),
     [TD_SLSH] = ACTION_TAP_DANCE_DOUBLE(ES_SLSH, ES_BSLS), 
     [TD_COSE] = ACTION_TAP_DANCE_DOUBLE(ES_COMM, ES_SCLN),
     [TD_DOT]  = ACTION_TAP_DANCE_DOUBLE(ES_DOT,  ES_COLN), 
