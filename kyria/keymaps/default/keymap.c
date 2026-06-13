@@ -59,7 +59,7 @@ enum layers {
 #define LNX_TILD ALGR(KC_4)
 
 #define LNX_HASH ALGR(KC_3)
-#define LNX_CIRC S(KC_6)
+#define LNX_CIRC S(KC_LBRC)
 #define LNX_LBRC ALGR(KC_LBRC)
 #define LNX_RBRC ALGR(KC_RBRC)
 #define LNX_PIPE ALGR(KC_1)
