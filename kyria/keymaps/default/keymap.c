@@ -43,7 +43,7 @@ enum layers {
 #define CTL_ESC  MT(MOD_LCTL, KC_ESC)
 #define CTL_QUOT MT(MOD_RCTL, KC_QUOTE)
 #define CTL_MINS MT(MOD_RCTL, KC_MINUS)
-#define LALT_LGUI MT(MOD_LALT, KC_LGUI)
+//#define LALT_LGUI MT(MOD_LALT, KC_LGUI)
 #define RALT_RGUI MT(MOD_RALT, KC_RGUI)
 #define ALT_ENT  MT(MOD_LALT, KC_ENT)
 #define SHIF_CAPS MT(MOD_LSFT, KC_CAPS)
@@ -275,10 +275,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 */
 //Modify
    [_QWERTY] = LAYOUT(
-       CTL_ESC, ES_Q,  ES_W,    ES_E,      ES_R,      ES_T,                                                        ES_Y,      ES_U,        ES_I,       ES_O,       ES_P, TD(TD_QUOT),
-        KC_TAB, ES_A,  ES_S,    ES_D,      ES_F,      ES_G,                                                        ES_H,      ES_J,        ES_K,       ES_L,    OS_ACUT,     KC_BSPC,
-     SHIF_CAPS, ES_Z,  ES_X,    ES_C,      ES_V,      ES_B, FKEYS,    NUM,        TD(TD_EQPLUS), TD(TD_QUES),  TD(TD_N),      ES_M, TD(TD_COSE), TD(TD_DOT), TD(TD_MIN), TD(TD_SLSH),
-                             KC_MUTE, LALT_LGUI,   KC_LCTL,   SYM, KC_ENT,               KC_SPC,      ADJUST,       NAV, RALT_RGUI,    WIN_LOCK 
+       CTL_ESC, ES_Q,  ES_W,    ES_E,      ES_R,      ES_T,                                                     ES_Y,      ES_U,        ES_I,       ES_O,       ES_P, TD(TD_QUOT),
+        KC_TAB, ES_A,  ES_S,    ES_D,      ES_F,      ES_G,                                                     ES_H,      ES_J,        ES_K,       ES_L,    OS_ACUT,     KC_BSPC,
+     SHIF_CAPS, ES_Z,  ES_X,    ES_C,      ES_V,      ES_B, KC_RALT,    NUM,        TD(TD_EQPLUS),  FKEYS,  TD(TD_N),      ES_M, TD(TD_COSE), TD(TD_DOT), TD(TD_MIN), TD(TD_SLSH),
+                             KC_MUTE,   KC_LGUI,   KC_LCTL,     SYM, KC_ENT,               KC_SPC,  ADJUST,      NAV, RALT_RGUI,    WIN_LOCK 
     ),
 
 /*|
@@ -296,10 +296,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `----------------------------------'  `----------------------------------'
  */
 [_DVORAK] = LAYOUT(
-     CTL_ESC,  TD(TD_DOT), TD(TD_COSE),  OS_ACUT,      ES_P,      ES_Y,                                                         ES_F,      ES_G,     ES_C,     ES_H, ES_L, TD(TD_QUOT),
-      KC_TAB,        ES_A,        ES_O,     ES_E,      ES_U,      ES_I,                                                         ES_D,      ES_R,     ES_T, TD(TD_N), ES_S,     KC_BSPC,
-   SHIF_CAPS,  TD(TD_MIN),        ES_Q,     ES_J,      ES_K,      ES_X, FKEYS,      KC_NUM,        TD(TD_EQPLUS), TD(TD_QUES),  ES_B,      ES_M,     ES_W,     ES_V, ES_Z, TD(TD_SLSH),
-                                         KC_MUTE,   KC_LCTL, LALT_LGUI,   SYM,      KC_ENT,               KC_SPC,      ADJUST,   NAV, RALT_RGUI, WIN_LOCK
+     CTL_ESC,  TD(TD_DOT), TD(TD_COSE),  OS_ACUT,      ES_P,      ES_Y,                                                 ES_F,      ES_G,     ES_C,     ES_H, ES_L, TD(TD_QUOT),
+      KC_TAB,        ES_A,        ES_O,     ES_E,      ES_U,      ES_I,                                                 ES_D,      ES_R,     ES_T, TD(TD_N), ES_S,     KC_BSPC,
+   SHIF_CAPS,  TD(TD_MIN),        ES_Q,     ES_J,      ES_K,      ES_X, KC_RALT,    NUM,        TD(TD_EQPLUS),  FKEYS,  ES_B,      ES_M,     ES_W,     ES_V, ES_Z, TD(TD_SLSH),
+                                         KC_MUTE,   KC_LGUI,   KC_LCTL,     SYM, KC_ENT,               KC_SPC, ADJUST,   NAV, RALT_RGUI, WIN_LOCK
     ),
 
 /*
@@ -319,7 +319,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_GAMES] = LAYOUT(
      CTL_ESC, ES_Q,  ES_W,    ES_E,     ES_R,    ES_T,                                                   ES_Y,      ES_U,        ES_I,       ES_O,       ES_P, TD(TD_QUOT),
       KC_TAB, ES_A,  ES_S,    ES_D,     ES_F,    ES_G,                                                   ES_H,      ES_J,        ES_K,       ES_L,    OS_ACUT,     KC_BSPC,
-     KC_LSFT, ES_Z,  ES_X,    ES_C,     ES_V,    ES_B,   ES_1,  ES_2,          ES_GRV, TD(TD_QUES),  TD(TD_N),      ES_M, TD(TD_COSE), TD(TD_DOT), TD(TD_MIN), TD(TD_SLSH),
+     KC_LSFT, ES_Z,  ES_X,    ES_C,     ES_V,    ES_B,   ES_1,  ES_2,          ES_GRV,       FKEYS,  TD(TD_N),      ES_M, TD(TD_COSE), TD(TD_DOT), TD(TD_MIN), TD(TD_SLSH),
                            KC_MUTE,  KC_LALT, KC_LCTL, KC_SPC,  ES_3,          KC_SPC,      ADJUST,       NAV, RALT_RGUI,  WIN_LOCK 
     ),
 
@@ -551,3 +551,4 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 }
 #endif
 DELETE THIS LINE TO UNCOMMENT (2/2) */
+
