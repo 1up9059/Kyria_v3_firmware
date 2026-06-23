@@ -16,9 +16,11 @@
 
 #include "quantum.h"
 #include "oled_driver.h"
-#include <string.h> 
+#include <stdio.h>
+#include <string.h>
 
 extern bool is_linux_mode(void);
+extern const char *get_oled_typed_buffer(void);
 
 #ifdef OLED_ENABLE
 
@@ -28,52 +30,64 @@ oled_rotation_t oled_init_kb(oled_rotation_t rotation) {
     return OLED_ROTATION_180;
 }
 
+static void oled_render_os_selector(void) {
+    bool linux_mode = is_linux_mode();
+
+    oled_write_P(PSTR("OS:    "), false);
+    oled_write_P(PSTR("Lnx"), linux_mode);
+    oled_write_P(PSTR("  | "), false);
+    oled_write_P(PSTR("Wndws"), !linux_mode);
+}
+
+
 bool oled_task_kb(void) {
     if (!oled_task_user()) {
         return false;
     }
     if (is_keyboard_master()) {
 
-        // QMK Logo and version information
-        // clang-format off
-        static const char PROGMEM qmk_logo[] = {
-            0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8a,0x8b,0x8c,0x8d,0x8e,0x8f,0x90,0x91,0x92,0x93,0x94,
-            0xa0,0xa1,0xa2,0xa3,0xa4,0xa5,0xa6,0xa7,0xa8,0xa9,0xaa,0xab,0xac,0xad,0xae,0xaf,0xb0,0xb1,0xb2,0xb3,0xb4,
-            0xc0,0xc1,0xc2,0xc3,0xc4,0xc5,0xc6,0xc7,0xc8,0xc9,0xca,0xcb,0xcc,0xcd,0xce,0xcf,0xd0,0xd1,0xd2,0xd3,0xd4,0};
-        // clang-format on
-
-        oled_write_P(qmk_logo, false);
-        oled_write_P(PSTR("KYRIA "), false);
-#if defined(KEYBOARD_splitkb_kyria_rev1)
-        oled_write_P(PSTR("Rev1\n\n"), false);
-#elif defined(KEYBOARD_splitkb_kyria_rev2)
-        oled_write_P(PSTR("Rev2\n\n"), false);
-#elif defined(KEYBOARD_splitkb_kyria_rev3)
-        oled_write_P(PSTR("Rev3\n\n"), false);
-#endif
+        oled_write_P(PSTR("Keyboard: KYRIA "), false);
+   
+        #if defined(KEYBOARD_splitkb_kyria_rev1)
+                oled_write_P(PSTR("Rev1\n"), false);
+        #elif defined(KEYBOARD_splitkb_kyria_rev2)
+                oled_write_P(PSTR("Rev2\n"), false);
+        #elif defined(KEYBOARD_splitkb_kyria_rev3)
+                oled_write_P(PSTR("Rev3\n"), false);
+        #endif
         // Host Keyboard Layer Status
+        oled_write_P(PSTR("\n"), false);
         oled_write_P(PSTR("Layer: "), false);
         switch (get_highest_layer(layer_state | default_layer_state)) {
-            case 0: oled_write_P(PSTR("QWERTY\n"), false); break;
-            case 1: oled_write_P(PSTR("Dvorak\n"), false); break;
-            case 2: oled_write_P(PSTR("Games\n"), false); break;
-            case 3: oled_write_P(PSTR("Nav\n"), false); break;
-            case 4: oled_write_P(PSTR("Sym\n"), false); break;
-            case 5: oled_write_P(PSTR("Function\n"), false); break;
-            case 6: oled_write_P(PSTR("Adjust\n"), false); break;
-            case 7: oled_write_P(PSTR("NumPad\n"), false); break;
+            case 0: oled_write_P(PSTR("QWRT\n"), false); break;
+            case 1: oled_write_P(PSTR("Dvrk\n"), false); break;
+            case 2: oled_write_P(PSTR("Game\n"), false); break;
+            case 3: oled_write_P(PSTR("Navy\n"), false); break;
+            case 4: oled_write_P(PSTR("Symb\n"), false); break;
+            case 5: oled_write_P(PSTR("Func\n"), false); break;
+            case 6: oled_write_P(PSTR("Adjs\n"), false); break;
+            case 7: oled_write_P(PSTR("NmPd\n"), false); break;
             default: oled_write_P(PSTR("Undefined\n"), false);
         }
 
         // Host Keyboard LED Status
-        oled_write_P(PSTR("Funct: "), false);
+        //oled_write_P(PSTR("OS: "), false);
         led_t led_usb_state = host_keyboard_led_state();
-        oled_write_P(is_linux_mode() ? PSTR("Lnx\n") : PSTR("Wndws\n"),false);
-        oled_write_P(led_usb_state.num_lock ? PSTR("NUMLCK ") : PSTR("       "), false);
-        oled_write_P(led_usb_state.caps_lock ? PSTR("CAPLCK ") : PSTR("       "), false);
-        oled_write_P(led_usb_state.scroll_lock ? PSTR("SCRLCK ") : PSTR("       "), false);
+        oled_render_os_selector();
+        oled_write_P(PSTR("\n"), false);
+
+        oled_write_P(PSTR("Fnct:  "), false);
+        oled_write_P(led_usb_state.num_lock ?  PSTR("NLCK ") : PSTR("     "), false);
+        oled_write_P(PSTR("| "), false);
+        oled_write_P(led_usb_state.caps_lock ? PSTR("CLCK ") : PSTR("     "), false);
+        oled_write_P(PSTR("\n"), false);
+        //oled_write_P(PSTR("| "), false);
+        //oled_write_P(led_usb_state.scroll_lock ? PSTR("SCRLCK") : PSTR("       "), false);
         //oled_write_P(PSTR("OS: "), false);
         //oled_write_P(is_linux_mode() ? PSTR("Lnx\n") : PSTR("Wndws\n"),false);
+        oled_write_P(PSTR("\n"), false);
+        oled_write_P(PSTR(">: "), false);
+        oled_write_ln(get_oled_typed_buffer(), false);
         
     } else {
         // OLED del esclavo

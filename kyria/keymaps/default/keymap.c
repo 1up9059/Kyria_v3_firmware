@@ -15,6 +15,7 @@
  */
 #include QMK_KEYBOARD_H
 #include "keymap_spanish_latin_america.h"
+#include <string.h>
 
 
 
@@ -164,12 +165,83 @@ tap_dance_action_t tap_dance_actions[] = {
 };
 
 
+#define OLED_TYPED_BUFFER_LEN 19
+
+static char oled_typed_buffer[OLED_TYPED_BUFFER_LEN] = {0};
+
+const char *get_oled_typed_buffer(void) {
+    return oled_typed_buffer;
+}
+
+static void oled_buffer_push_char(char c) {
+    memmove(oled_typed_buffer, oled_typed_buffer + 1, OLED_TYPED_BUFFER_LEN - 2);
+    oled_typed_buffer[OLED_TYPED_BUFFER_LEN - 2] = c;
+    oled_typed_buffer[OLED_TYPED_BUFFER_LEN - 1] = '\0';
+}
+
+static void oled_buffer_backspace(void) {
+    for (int8_t i = OLED_TYPED_BUFFER_LEN - 2; i >= 0; i--) {
+        if (oled_typed_buffer[i] != ' ') {
+            oled_typed_buffer[i] = ' ';
+            return;
+        }
+    }
+}
+
+static void oled_buffer_record_key(uint16_t keycode) {
+    switch (keycode) {
+        case KC_A ... KC_Z:
+            oled_buffer_push_char('a' + (keycode - KC_A));
+            break;
+
+        case KC_1 ... KC_9:
+            oled_buffer_push_char('1' + (keycode - KC_1));
+            break;
+
+        case KC_0:
+            oled_buffer_push_char('0');
+            break;
+
+        case KC_SPC:
+            oled_buffer_push_char(' ');
+            break;
+
+        case KC_DOT:
+            oled_buffer_push_char('.');
+            break;
+
+        case KC_COMM:
+            oled_buffer_push_char(',');
+            break;
+
+        case KC_MINS:
+            oled_buffer_push_char('-');
+            break;
+
+        case KC_SLSH:
+            oled_buffer_push_char('/');
+            break;
+
+        case KC_QUOT:
+            oled_buffer_push_char('\'');
+            break;
+
+        case KC_BSPC:
+            oled_buffer_backspace();
+            break;
+
+        case KC_ENT:
+            oled_buffer_push_char(' ');
+            break;
+    }
+}
 
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (!record->event.pressed) {
         return true;
     }
+    oled_buffer_record_key(keycode);
 
     switch (keycode) {
         case CTL_ALT_DEL:
@@ -401,10 +473,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `----------------------------------'  `----------------------------------'
  */
     [_ADJUST] = LAYOUT(
-      _______,  QWERTY,  OS_WIN,_______, _______,  OS_TOG,                                    _______, _______, _______, _______,  _______, _______,
-      _______,  OS_LNX, _______, DVORAK, _______,   GAMES,                                    RM_TOGG, RM_SATU, RM_HUEU, RM_VALU,  RM_NEXT, RM_SPDU,
-      _______, _______, _______,_______, _______, _______,_______,          _______, _______, _______, RM_NEXT, RM_SATD, RM_HUED, RM_VALD,  RM_PREV, RM_SPDD,
-                                _______, _______, _______,_______,          _______, _______, _______, _______, _______, _______
+      _______,  QWERTY,  OS_WIN, _______, _______,  OS_TOG,                                             _______, _______, _______, _______,  _______, _______,
+      _______,  OS_LNX, _______,  DVORAK, _______,   GAMES,                                             RM_TOGG, RM_SATU, RM_HUEU, RM_VALU,  RM_NEXT, RM_SPDU,
+      _______, _______, _______, _______, _______, _______, _______, _______,          _______, _______, RM_NEXT, RM_SATD, RM_HUED, RM_VALD,  RM_PREV, RM_SPDD,
+                                 _______, _______, _______, _______, _______,          _______, _______, _______, _______, _______
     ),
 
     /*
@@ -551,4 +623,3 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 }
 #endif
 DELETE THIS LINE TO UNCOMMENT (2/2) */
-
